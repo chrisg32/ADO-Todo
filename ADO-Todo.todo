@@ -1,0 +1,17 @@
+Before release:
+    ✔ User can set URL @done(21-04-27 07:12)
+    ✔ User can set project @done(21-04-27 07:12)
+    ✔ User can set PAT @done(21-04-27 07:12)
+    ✔ Saved pat is encrypted @done(21-04-27 07:12)
+    ✔ Other options are disabled @done(21-04-22 19:10)
+    ✔ Safe for Git @done(21-04-27 07:12)
+    ☐ Checked in to Git
+    ✔ Last refreshed time @done(21-04-21 07:09)
+    ☐ Basic documentation
+Features:
+    ☐ Color code todo items
+    ☐ Sort by work priority
+    ☐ Build failures
+    ☐ Merge conflicts
+Bugs:
+    ☐ Text entry dialog is missing suggestion/hint text.

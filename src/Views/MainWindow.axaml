@@ -1,0 +1,112 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ADOTodo.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="400"
+        x:Class="ADOTodo.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="ADO-Todo"
+        Width="350" MaxWidth="350" MinWidth="350" Height="550">
+
+    <Window.Styles>
+        <Style Selector="TextBlock.details">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Foreground" Value="LightGray"/>
+        </Style>
+        <Style Selector="TextBlock.pr">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="Gray"/>
+        </Style>
+        <Style Selector="TextBlock.error">
+            <Setter Property="Foreground" Value="Red"/>
+        </Style>
+        <Style Selector="TextBlock.comment">
+            
+        </Style>
+    </Window.Styles>
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+    <Grid RowDefinitions="* Auto">
+        <TabControl>
+            <TabItem Header="Todo">
+                <Grid Grid.RowDefinitions="* Auto">
+                    <ListBox Items="{Binding TodoItems}" Background="Transparent" SelectedItem="{Binding SelectedItem}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderThickness="0,1" BorderBrush="Orange">
+                                    <Grid Cursor="Hand">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="PR" Classes="details" Margin="0,0,3,0"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PullRequestId}" Classes="details"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding LastUpdated}" Classes="details"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" Text="{Binding PullRequestTitle}" Classes="pr" TextWrapping="Wrap"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Text="{Binding CommentText}" Classes="comment" TextWrapping="Wrap"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <TextBlock Text="Last Refreshed" Classes="details" Margin="0,0,5,0"/>
+                        <TextBlock Text="{Binding RefreshedDate}" Classes="details"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <!-- <TabItem Header="Open"></TabItem> -->
+            <TabItem Header="Settings">
+                <ScrollViewer>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Command="{Binding SetServerCommand}">Set Server</Button>
+                            <Button Command="{Binding SetProjectCommand}">Set Project</Button>
+                            <Button Command="{Binding SetPATCommand}">Set PAT</Button>
+                        </StackPanel>
+                        <!-- <StackPanel Orientation="Horizontal"> -->
+                        <!--     <Label VerticalContentAlignment="Center">Quick Presets:</Label> -->
+                        <!--     <Button>Dev</Button> -->
+                        <!--     <Button>QA</Button> -->
+                        <!-- </StackPanel> -->
+                        <!-- <Label>PRs created by me</Label> -->
+                        <!-- <CheckBox>Merge Conflicts</CheckBox> -->
+                        <!-- <CheckBox>Build Failures</CheckBox> -->
+                        <!-- <RadioButton GroupName="Mine" IsChecked="{Binding MineAllOpenComments}">All open threads</RadioButton> -->
+                        <!-- <RadioButton GroupName="Mine" IsChecked="{Binding MineAllOpenCommentsOnThreadsIStarted}">Threads I have started</RadioButton> -->
+                        <!-- <RadioButton GroupName="Mine" IsChecked="{Binding MineAllOpenCommentsOnThreadsICommentedOn}">Threads I have commented on</RadioButton> -->
+                        <!-- <RadioButton GroupName="Mine" IsChecked="{Binding MineAllOpenCommentsOnThreadsMentioningMe}">Threads mentioning me</RadioButton> -->
+                        <!-- <RadioButton GroupName="Mine" IsChecked="{Binding MineNone}">None</RadioButton> -->
+                        <!-- <Label>PRs create by others</Label> -->
+                        <!-- <CheckBox>Merge Conflicts</CheckBox> -->
+                        <!-- <CheckBox>Build Failures</CheckBox> -->
+                        <!-- <RadioButton GroupName="Other" IsChecked="{Binding OtherAllOpenComments}">All open threads</RadioButton> -->
+                        <!-- <RadioButton GroupName="Other" IsChecked="{Binding OtherAllOpenCommentsOnThreadsIStarted}">Threads I have started</RadioButton> -->
+                        <!-- <RadioButton GroupName="Other" IsChecked="{Binding OtherAllOpenCommentsOnThreadsICommentedOn}">Threads I have commented on</RadioButton> -->
+                        <!-- <RadioButton GroupName="Other" IsChecked="{Binding OtherAllOpenCommentsOnThreadsMentioningMe}">Threads mentioning me</RadioButton> -->
+                        <!-- <RadioButton GroupName="Mine" IsChecked="{Binding OtherNone}">None</RadioButton> -->
+                        <!-- <Label>Comprehensive PRs</Label> -->
+                        <!-- <CheckBox>Merge Conflicts</CheckBox> -->
+                        <!-- <CheckBox>Build Failures</CheckBox> -->
+                        <!-- <RadioButton GroupName="Comprehensive" IsChecked="{Binding ComprehensiveAllOpenComments}">All open threads</RadioButton> -->
+                        <!-- <RadioButton GroupName="Comprehensive" IsChecked="{Binding ComprehensiveAllOpenCommentsOnThreadsIStarted}">Threads I have started</RadioButton> -->
+                        <!-- <RadioButton GroupName="Comprehensive" IsChecked="{Binding ComprehensiveAllOpenCommentsOnThreadsICommentedOn}">Threads I have commented on</RadioButton> -->
+                        <!-- <RadioButton GroupName="Comprehensive" IsChecked="{Binding ComprehensiveAllOpenCommentsOnThreadsMentioningMe}">Threads mentioning me</RadioButton> -->
+                        <!-- <RadioButton GroupName="Mine" IsChecked="{Binding ComprehensiveNone}">None</RadioButton> -->
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+        <TextBlock Grid.Row="1" Classes="error" TextWrapping="Wrap" Text="{Binding ErrorMessage}"/>
+    </Grid>
+</Window>
