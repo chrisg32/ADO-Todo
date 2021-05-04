@@ -23,7 +23,7 @@ namespace ADOTodo.ViewModels
         private const string SettingsFileName = "prlist.dat";
 
         private AdoService? _adoService;
-        public ObservableCollection<TodoItem> TodoItems { get; } = new ObservableCollection<TodoItem>();
+        public ObservableCollection<ITodoItem> TodoItems { get; } = new ObservableCollection<ITodoItem>();
 
         public MainWindowViewModel()
         {
@@ -74,7 +74,7 @@ namespace ADOTodo.ViewModels
             
             _adoService ??= new AdoService(_connectionSettings);
             
-            var todos = new HashSet<TodoItem>(TodoItem.TodoItemEqualityComparer);
+            var todos = new HashSet<PrThreadTodoItem>(PrThreadTodoItem.EqualityComparer);
 
             if (_mine != ThreadFilterLevel.None)
             {
@@ -82,7 +82,7 @@ namespace ADOTodo.ViewModels
                 switch (_mine)
                 {
                     case ThreadFilterLevel.Mentions:
-                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Where(thread => thread.MentionsUser(_adoService.UserId)).Select(t => new TodoItem(pr, t, _adoService.Uri, _connectionSettings.Project))));
+                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Where(thread => thread.MentionsUser(_adoService.UserId)).Select(t => new PrThreadTodoItem(pr, t, _adoService.Uri, _connectionSettings.Project))));
                         break;
                     case ThreadFilterLevel.Comments:
                         throw new NotImplementedException();
@@ -91,7 +91,7 @@ namespace ADOTodo.ViewModels
                         throw new NotImplementedException();
                         break;
                     case ThreadFilterLevel.All:
-                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Select(t => new TodoItem(pr, t, _adoService.Uri, _connectionSettings.Project))));
+                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Select(t => new PrThreadTodoItem(pr, t, _adoService.Uri, _connectionSettings.Project))));
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -108,7 +108,7 @@ namespace ADOTodo.ViewModels
 
             foreach (var todo in todos)
             {
-                todo.UpdateCommentText(userMap);
+                todo.UpdateDescriptionTextWithMentions(userMap);
             }
             
             TodoItems.Clear();
@@ -218,7 +218,7 @@ namespace ADOTodo.ViewModels
         public bool ComprehensiveAllOpenCommentsOnThreadsMentioningMe { get; set; }
         public bool ComprehensiveNone { get; set; }
 
-        public TodoItem? SelectedItem
+        public ITodoItem? SelectedItem
         {
             get => null;
             set

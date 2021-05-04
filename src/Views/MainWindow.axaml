@@ -35,7 +35,10 @@
                     <ListBox Items="{Binding TodoItems}" Background="Transparent" SelectedItem="{Binding SelectedItem}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Border BorderThickness="0,1" BorderBrush="Orange">
+                                <Border BorderThickness="0,1">
+                                    <Border.BorderBrush>
+                                        <SolidColorBrush Color="{Binding Color}"/>
+                                    </Border.BorderBrush>
                                     <Grid Cursor="Hand">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
@@ -49,11 +52,11 @@
                                             <RowDefinition/>
                                             <RowDefinition/>
                                         </Grid.RowDefinitions>
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="PR" Classes="details" Margin="0,0,3,0"/>
-                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PullRequestId}" Classes="details"/>
-                                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding LastUpdated}" Classes="details"/>
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" Text="{Binding PullRequestTitle}" Classes="pr" TextWrapping="Wrap"/>
-                                        <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Text="{Binding CommentText}" Classes="comment" TextWrapping="Wrap"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding ItemType}" Classes="details" Margin="0,0,3,0"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Id}" Classes="details"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Date}" Classes="details"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" Text="{Binding Title}" Classes="pr" TextWrapping="Wrap"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Text="{Binding Description}" Classes="comment" TextWrapping="Wrap"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>

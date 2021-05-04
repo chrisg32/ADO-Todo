@@ -18,17 +18,17 @@ namespace ADOTodo.Util
             return thread.Comments.Any(c => MentionRegex.Matches(c.Content).Any(m => Guid.Parse(m.Groups["UserId"].Value) == userId));
         }
 
-        public static IEnumerable<Guid> GetMentions(this TodoItem todo)
+        public static IEnumerable<Guid> GetMentions(this ITodoItem todo)
         {
-            return todo.CommentText == null ? Enumerable.Empty<Guid>() : MentionRegex.Matches(todo.CommentText).Select(m => Guid.Parse(m.Groups["UserId"].Value));
+            return todo.Description == null ? Enumerable.Empty<Guid>() : MentionRegex.Matches(todo.Description).Select(m => Guid.Parse(m.Groups["UserId"].Value));
         }
         
-        public static void UpdateCommentText(this TodoItem todo, Dictionary<Guid, string?> userMap)
+        public static void UpdateDescriptionTextWithMentions(this ITodoItem todo, Dictionary<Guid, string?> userMap)
         {
-            if(todo.CommentText == null) return;
-            var result = todo.CommentText;
+            if(todo.Description == null) return;
+            var result = todo.Description;
             var offset = 0;
-            foreach (Match match in MentionRegex.Matches(todo.CommentText).Where(m => m.Success))
+            foreach (Match match in MentionRegex.Matches(todo.Description).Where(m => m.Success))
             {
                 var userId = Guid.Parse(match.Groups["UserId"].Value);
                 var displayName = userMap[userId];
@@ -37,7 +37,7 @@ namespace ADOTodo.Util
                 offset += match.Length - (displayName?.Length ?? 0);
             }
 
-            todo.CommentText = result;
+            todo.Description = result;
         }
         
         public static string? BlockTruncate(this string source, int length)
