@@ -17,7 +17,7 @@ namespace ADOTodo.Services
         private readonly GitHttpClient _client;
         private readonly IdentityHttpClient _userClient;
         
-        public AdoService(ConnectionSettings settings)
+        public AdoService(Settings settings)
         {
             _projectName = settings.Project;
             var credentials = new VssBasicCredential(string.Empty, settings.Token);

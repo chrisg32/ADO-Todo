@@ -1,12 +1,21 @@
-using System;
 using System.IO;
 using System.Text.Json;
-using Avalonia;
 
 namespace ADOTodo.Services
 {
     public static class PersistenceModule
     {
+        public static void SafeRename<TValue>(string oldPath, string newPath) where TValue : class
+        {
+            oldPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), oldPath);
+            newPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), newPath);
+            if (!File.Exists(oldPath) || File.Exists(newPath)) return;
+            var json = File.ReadAllText(oldPath);
+            var o = JsonSerializer.Deserialize<TValue>(json);
+            if (o == default(TValue?)) return;
+            File.Move(oldPath, newPath);
+        }
+        
         public static TValue Load<TValue>(string path) where TValue : new()
         {
             path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), path);

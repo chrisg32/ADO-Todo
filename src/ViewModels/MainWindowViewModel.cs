@@ -19,15 +19,16 @@ namespace ADOTodo.ViewModels
     public class MainWindowViewModel : ViewModelBase, IDisposable
     {
         private readonly Timer _timer;
-        private readonly ConnectionSettings _connectionSettings;
-        private const string SettingsFileName = "prlist.dat";
+        private readonly Settings _settings;
+        private const string SettingsFileName = "adolist.dat";
 
         private AdoService? _adoService;
         public ObservableCollection<ITodoItem> TodoItems { get; } = new ObservableCollection<ITodoItem>();
 
         public MainWindowViewModel()
         {
-            _connectionSettings = PersistenceModule.Load<ConnectionSettings>(SettingsFileName);
+            PersistenceModule.SafeRename<Settings>("prlist.dat", SettingsFileName);
+            _settings = PersistenceModule.Load<Settings>(SettingsFileName);
             _timer = new Timer(async e => await Poll(e), null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
             SetServerCommand = ReactiveCommand.Create(SetServer);
             SetProjectCommand = ReactiveCommand.Create(SetProject);
@@ -38,10 +39,10 @@ namespace ADOTodo.ViewModels
         {
             var result = await TextEntryDialog.Show("Set Server", "Please enter the server URL e.g. https://dev.azure.com/my-company");
             if(string.IsNullOrWhiteSpace(result)) return;
-            _connectionSettings.Server = result.Trim();
+            _settings.Server = result.Trim();
             if (ValidateCredentials())
             {
-                PersistenceModule.Save(SettingsFileName, _connectionSettings);
+                PersistenceModule.Save(SettingsFileName, _settings);
             }
         }
         
@@ -49,10 +50,10 @@ namespace ADOTodo.ViewModels
         {
             var result = await TextEntryDialog.Show("Set Project", "Please enter a project name.");
             if(string.IsNullOrWhiteSpace(result)) return;
-            _connectionSettings.Project = result.Trim();
+            _settings.Project = result.Trim();
             if (ValidateCredentials())
             {
-                PersistenceModule.Save(SettingsFileName, _connectionSettings);
+                PersistenceModule.Save(SettingsFileName, _settings);
             }
         }
         
@@ -60,10 +61,10 @@ namespace ADOTodo.ViewModels
         {
             var result = await TextEntryDialog.Show("Set PAT", "Please enter a Personal Access Token.");
             if(string.IsNullOrWhiteSpace(result)) return;
-            _connectionSettings.Token = result.Trim();
+            _settings.Token = result.Trim();
             if (ValidateCredentials())
             {
-                PersistenceModule.Save(SettingsFileName, _connectionSettings);
+                PersistenceModule.Save(SettingsFileName, _settings);
             }
         }
 
@@ -72,7 +73,7 @@ namespace ADOTodo.ViewModels
             //check for PAT and project
             if (!ValidateCredentials()) return;
             
-            _adoService ??= new AdoService(_connectionSettings);
+            _adoService ??= new AdoService(_settings);
             
             var todos = new HashSet<PrThreadTodoItem>(PrThreadTodoItem.EqualityComparer);
 
@@ -82,7 +83,7 @@ namespace ADOTodo.ViewModels
                 switch (_mine)
                 {
                     case ThreadFilterLevel.Mentions:
-                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Where(thread => thread.MentionsUser(_adoService.UserId)).Select(t => new PrThreadTodoItem(pr, t, _adoService.Uri, _connectionSettings.Project))));
+                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Where(thread => thread.MentionsUser(_adoService.UserId)).Select(t => new PrThreadTodoItem(pr, t, _adoService.Uri, _settings.Project))));
                         break;
                     case ThreadFilterLevel.Comments:
                         throw new NotImplementedException();
@@ -91,7 +92,7 @@ namespace ADOTodo.ViewModels
                         throw new NotImplementedException();
                         break;
                     case ThreadFilterLevel.All:
-                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Select(t => new PrThreadTodoItem(pr, t, _adoService.Uri, _connectionSettings.Project))));
+                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Select(t => new PrThreadTodoItem(pr, t, _adoService.Uri, _settings.Project))));
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -118,17 +119,17 @@ namespace ADOTodo.ViewModels
 
         private bool ValidateCredentials()
         {
-            if (string.IsNullOrEmpty(_connectionSettings.Server))
+            if (string.IsNullOrEmpty(_settings.Server))
             {
                 ErrorMessage = "A server is required.";
                 return false;
             }
-            if (string.IsNullOrEmpty(_connectionSettings.Project))
+            if (string.IsNullOrEmpty(_settings.Project))
             {
                 ErrorMessage = "A project is required.";
                 return false;
             }
-            if (string.IsNullOrEmpty(_connectionSettings.Token))
+            if (string.IsNullOrEmpty(_settings.Token))
             {
                 ErrorMessage = "A PAT is required.";
                 return false;

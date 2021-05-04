@@ -1,11 +1,10 @@
-using System;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using CG.Commons.Util;
 
 namespace ADOTodo.Models
 {
-    public class ConnectionSettings
+    public class Settings
     {
         [JsonIgnore]
         [IgnoreDataMember]
