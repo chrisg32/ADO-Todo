@@ -20,5 +20,7 @@ namespace ADOTodo.Models
             get => EncryptedToken == null ? null : StringCipher.Decrypt(EncryptedToken, Passphrase);
             set => EncryptedToken = value == null ? null : StringCipher.Encrypt(value, Passphrase);
         }
+
+        public PrSettings Mine { get; set; } = new PrSettings(ThreadFilterLevel.All);
     }
 }

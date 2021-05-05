@@ -6,7 +6,6 @@
         <RootNamespace>ADOTodo</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <Folder Include="Getters" />
         <Folder Include="Models\" />
         <AvaloniaResource Include="Assets\**" />
     </ItemGroup>
