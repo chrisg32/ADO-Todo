@@ -7,11 +7,11 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using CG.Commons.Extensions;
+using ADOTodo.Getters;
 using ADOTodo.Models;
 using ADOTodo.Services;
-using ADOTodo.Util;
 using ADOTodo.Views;
+using CG.Commons.Extensions;
 using ReactiveUI;
 
 namespace ADOTodo.ViewModels
@@ -19,30 +19,36 @@ namespace ADOTodo.ViewModels
     public class MainWindowViewModel : ViewModelBase, IDisposable
     {
         private readonly Timer _timer;
-        private readonly Settings _settings;
+        public Settings Settings { get; }
         private const string SettingsFileName = "adolist.dat";
 
         private AdoService? _adoService;
         public ObservableCollection<ITodoItem> TodoItems { get; } = new ObservableCollection<ITodoItem>();
 
+        private readonly List<IGetter> _getters;
+
         public MainWindowViewModel()
         {
             PersistenceModule.SafeRename<Settings>("prlist.dat", SettingsFileName);
-            _settings = PersistenceModule.Load<Settings>(SettingsFileName);
+            Settings = PersistenceModule.Load<Settings>(SettingsFileName);
             _timer = new Timer(async e => await Poll(e), null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
             SetServerCommand = ReactiveCommand.Create(SetServer);
             SetProjectCommand = ReactiveCommand.Create(SetProject);
             SetPATCommand = ReactiveCommand.Create(SetPAT);
+
+            _getters = GetType().Assembly.GetTypes()
+                .Where(t => typeof(IGetter).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+                .Select(Activator.CreateInstance).Where(o => o != null).Cast<IGetter>().ToList();
         }
 
         private async Task SetServer()
         {
             var result = await TextEntryDialog.Show("Set Server", "Please enter the server URL e.g. https://dev.azure.com/my-company");
             if(string.IsNullOrWhiteSpace(result)) return;
-            _settings.Server = result.Trim();
+            Settings.Server = result.Trim();
             if (ValidateCredentials())
             {
-                PersistenceModule.Save(SettingsFileName, _settings);
+                PersistenceModule.Save(SettingsFileName, Settings);
             }
         }
         
@@ -50,10 +56,10 @@ namespace ADOTodo.ViewModels
         {
             var result = await TextEntryDialog.Show("Set Project", "Please enter a project name.");
             if(string.IsNullOrWhiteSpace(result)) return;
-            _settings.Project = result.Trim();
+            Settings.Project = result.Trim();
             if (ValidateCredentials())
             {
-                PersistenceModule.Save(SettingsFileName, _settings);
+                PersistenceModule.Save(SettingsFileName, Settings);
             }
         }
         
@@ -61,10 +67,10 @@ namespace ADOTodo.ViewModels
         {
             var result = await TextEntryDialog.Show("Set PAT", "Please enter a Personal Access Token.");
             if(string.IsNullOrWhiteSpace(result)) return;
-            _settings.Token = result.Trim();
+            Settings.Token = result.Trim();
             if (ValidateCredentials())
             {
-                PersistenceModule.Save(SettingsFileName, _settings);
+                PersistenceModule.Save(SettingsFileName, Settings);
             }
         }
 
@@ -73,63 +79,33 @@ namespace ADOTodo.ViewModels
             //check for PAT and project
             if (!ValidateCredentials()) return;
             
-            _adoService ??= new AdoService(_settings);
-            
-            var todos = new HashSet<PrThreadTodoItem>(PrThreadTodoItem.EqualityComparer);
+            _adoService ??= new AdoService(Settings);
 
-            if (_mine != ThreadFilterLevel.None)
-            {
-                var pullRequests = await _adoService.GetAllPullRequestsOpenedByMe();
-                switch (_mine)
-                {
-                    case ThreadFilterLevel.Mentions:
-                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Where(thread => thread.MentionsUser(_adoService.UserId)).Select(t => new PrThreadTodoItem(pr, t, _adoService.Uri, _settings.Project))));
-                        break;
-                    case ThreadFilterLevel.Comments:
-                        throw new NotImplementedException();
-                        break;
-                    case ThreadFilterLevel.Threads:
-                        throw new NotImplementedException();
-                        break;
-                    case ThreadFilterLevel.All:
-                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Select(t => new PrThreadTodoItem(pr, t, _adoService.Uri, _settings.Project))));
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
+            var todos = new List<ITodoItem>();
 
-            var userIds = todos.SelectMany(t => t.GetMentions()).Distinct();
-            var userMap = new Dictionary<Guid, string?>();
-            foreach (var id in userIds)
+            foreach (var getter in _getters)
             {
-                var displayName = await _adoService.GetUserName(id);
-                userMap.Add(id, displayName);
-            }
-
-            foreach (var todo in todos)
-            {
-                todo.UpdateDescriptionTextWithMentions(userMap);
+                todos.AddRange(await getter.GetAsync(Settings, _adoService));
             }
             
             TodoItems.Clear();
-            TodoItems.AddRange(todos.OrderBy(t => t.PrId));
+            TodoItems.AddRange(todos.OrderBy(t => t.ItemTypePriority).ThenBy(t => t.Id, new CG.Commons.Util.NaturalComparer()));
             RefreshedDate = DateTime.Now;
         }
 
         private bool ValidateCredentials()
         {
-            if (string.IsNullOrEmpty(_settings.Server))
+            if (string.IsNullOrEmpty(Settings.Server))
             {
                 ErrorMessage = "A server is required.";
                 return false;
             }
-            if (string.IsNullOrEmpty(_settings.Project))
+            if (string.IsNullOrEmpty(Settings.Project))
             {
                 ErrorMessage = "A project is required.";
                 return false;
             }
-            if (string.IsNullOrEmpty(_settings.Token))
+            if (string.IsNullOrEmpty(Settings.Token))
             {
                 ErrorMessage = "A PAT is required.";
                 return false;
@@ -145,79 +121,7 @@ namespace ADOTodo.ViewModels
             _adoService?.Dispose();
         }
         
-        //Mine
-        private ThreadFilterLevel _mine = ThreadFilterLevel.All;
-
-        private bool _mineAllOpenComments = true;
-        public bool MineAllOpenComments
-        {
-            get => _mineAllOpenComments;
-            set
-            {
-                _mineAllOpenComments = value;
-                if(value) _mine = ThreadFilterLevel.All;
-            }
-        }
-
-        private bool _mineAllOpenCommentsOnThreadsIStarted;
-        public bool MineAllOpenCommentsOnThreadsIStarted
-        {
-            get => _mineAllOpenCommentsOnThreadsIStarted;
-            set
-            {
-                _mineAllOpenCommentsOnThreadsIStarted = value;
-                if(value) _mine = ThreadFilterLevel.Threads;
-            }
-        }
-
-        private bool _mineAllOpenCommentsOnThreadsICommentedOn;
-        public bool MineAllOpenCommentsOnThreadsICommentedOn
-        {
-            get => _mineAllOpenCommentsOnThreadsICommentedOn;
-            set
-            {
-                _mineAllOpenCommentsOnThreadsICommentedOn = value;
-                if(value) _mine = ThreadFilterLevel.Comments;
-            }
-        }
-
-        private bool _mineAllOpenCommentsOnThreadsMentioningMe;
-        public bool MineAllOpenCommentsOnThreadsMentioningMe
-        {
-            get => _mineAllOpenCommentsOnThreadsMentioningMe;
-            set
-            {
-                _mineAllOpenCommentsOnThreadsMentioningMe = value;
-                if(value) _mine = ThreadFilterLevel.Mentions;
-            }
-        }
-
-        private bool _mineNone;
         private DateTime? _refreshedDate;
-
-        public bool MineNone
-        {
-            get => _mineNone;
-            set
-            {
-                _mineNone = value;
-                if(value) _mine = ThreadFilterLevel.None;
-            }
-        }
-        
-        //Other
-        public bool OtherAllOpenComments { get; set; }
-        public bool OtherAllOpenCommentsOnThreadsIStarted { get; set; }
-        public bool OtherAllOpenCommentsOnThreadsICommentedOn { get; set; }
-        public bool OtherAllOpenCommentsOnThreadsMentioningMe { get; set; } = true;
-        public bool OtherNone { get; set; }
-        
-        //Comprehensive
-        public bool ComprehensiveAllOpenComments { get; set; }
-        public bool ComprehensiveAllOpenCommentsOnThreadsIStarted { get; set; }
-        public bool ComprehensiveAllOpenCommentsOnThreadsICommentedOn { get; set; } = true;
-        public bool ComprehensiveAllOpenCommentsOnThreadsMentioningMe { get; set; }
-        public bool ComprehensiveNone { get; set; }
 
         public ITodoItem? SelectedItem
         {
