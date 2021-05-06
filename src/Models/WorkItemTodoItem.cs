@@ -1,4 +1,5 @@
 using System;
+using ADOTodo.Util;
 using Avalonia.Media;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 
@@ -10,9 +11,8 @@ namespace ADOTodo.Models
         {
             Id = $"#{workItem.Fields["System.Id"]}";
             Title = workItem.Fields["System.Title"] as string ?? string.Empty;
-            //TODO description is html
-            Description = workItem.Fields["System.Description"] as string;
-            ItemType = workItem.Fields["System.WorkItemType"] as string ?? string.Empty;
+            Description = (workItem.Fields["System.Description"] as string).HtmlToPlainText().Truncate();
+            
             
             Url = $"{baseUri}/{project}/_workitems/edit/{workItem.Fields["System.Id"]}";
             
@@ -27,16 +27,24 @@ namespace ADOTodo.Models
                 case "PBI":
                 case "Product Backlog Item":
                     //https://docs.microsoft.com/en-us/visualstudio/extensibility/ux-guidelines/images-and-icons-for-visual-studio?view=vs-2019#visual-studio-languages
-                    Color = Color.FromRgb(0, 149, 215);
+                    Color = Color.FromRgb(0, 120, 215);
                     ItemTypePriority = 2;
+                    ItemType = "PBI";
                     break;
                 case "Bug":
                     Color = Color.FromRgb(224, 76, 6);
                     ItemTypePriority = 2;
+                    ItemType = "Bug";
                     break;
                 case "Fire":
                     Color = Color.FromRgb(189, 30, 45);
                     ItemTypePriority = 1;
+                    ItemType = "Fire";
+                    break;
+                default:
+                    Color = Colors.CornflowerBlue;
+                    ItemTypePriority = 25;
+                    ItemType = workItem.Fields["System.WorkItemType"] as string ?? string.Empty;
                     break;
             }
         }

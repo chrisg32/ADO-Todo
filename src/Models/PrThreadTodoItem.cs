@@ -17,7 +17,7 @@ namespace ADOTodo.Models
             Title = pr.PullRequest.Title;
             Color = Color.FromRgb(103, 40, 120);
             var commentText = thread.Comments.OrderBy(c => c.PublishedDate).First().Content;
-            commentText = commentText.BlockTruncate(200);
+            commentText = commentText.BlockTruncate();
             Description = commentText ?? string.Empty;
             Date = thread.LastUpdatedDate.ToLocalTime();
             Url = $"{baseUri}/{project}/_git/{project}/pullrequest/{pr.PullRequest.PullRequestId}?discussionId={thread.Id}";
