@@ -11,6 +11,8 @@ namespace ADOTodo.Getters
 {
     public class MyPrGetter : IGetter
     {
+        public int RunOrder => 2;
+
         public async Task<List<ITodoItem>> GetAsync(Settings settings, AdoService adoService)
         {
             var todos = new HashSet<PrThreadTodoItem>(PrThreadTodoItem.EqualityComparer);

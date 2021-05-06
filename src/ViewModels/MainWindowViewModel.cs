@@ -83,13 +83,13 @@ namespace ADOTodo.ViewModels
 
             var todos = new List<ITodoItem>();
 
-            foreach (var getter in _getters)
+            foreach (var getter in _getters.OrderBy(g => g.RunOrder))
             {
                 todos.AddRange(await getter.GetAsync(Settings, _adoService));
             }
             
             TodoItems.Clear();
-            TodoItems.AddRange(todos.OrderBy(t => t.ItemTypePriority).ThenBy(t => t.Id, new CG.Commons.Util.NaturalComparer()));
+            TodoItems.AddRange(todos.OrderBy(t => t.ItemTypePriority));
             RefreshedDate = DateTime.Now;
         }
 

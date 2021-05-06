@@ -46,18 +46,7 @@ namespace ADOTodo.Services
             return await AddThreads(pullRequests, activeOnly);
         }
 
-        public async Task<List<WorkItem>> GetCurrentSprintItems()
-        {
-            return await QueryWorkItems(@"SELECT
-[System.Id]
-FROM workitems
-WHERE [System.WorkItemType] IN ('Product BackLog Item','Bug','Fire')
-AND [System.State] IN ('New', 'Committed')
-AND [System.IterationPath] = @CurrentIteration
-AND [System.AssignedTo] = @Me");
-        }
-
-        private async Task<List<WorkItem>> QueryWorkItems(string wiql)
+        public async Task<List<WorkItem>> QueryWorkItems(string wiql)
         {
             var wiqlO = new Wiql
             {
@@ -72,7 +61,8 @@ AND [System.AssignedTo] = @Me");
                 return new List<WorkItem>();
             }
 
-            var fields = new[] {"System.Id", "System.Title", "System.Description"};
+            //https://docs.microsoft.com/en-us/azure/devops/boards/work-items/guidance/work-item-field?view=azure-devops
+            var fields = new[] {"System.Id", "System.Title", "System.Description", "System.WorkItemType", "Microsoft.VSTS.Common.BacklogPriority", "System.ChangedDate"};
 
             var workItems = await _workItemClient.GetWorkItemsAsync(ids, fields);
 

@@ -113,3 +113,4 @@
         <TextBlock Grid.Row="1" Classes="error" TextWrapping="Wrap" Text="{Binding ErrorMessage}"/>
     </Grid>
 </Window>
+<!--https://avaloniaui.net/docs/advanced-tutorial/create-a-modern-window-->
