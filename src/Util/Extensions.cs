@@ -78,5 +78,11 @@ namespace ADOTodo.Util
             }
             return source;
         }
+
+        public static string? RemoveCommentArtifacts(this string? s)
+        {
+            if(string.IsNullOrEmpty(s)) return s;
+            return Regex.Replace(s, @"!\[.*\]\(.*\)", "");
+        }
     }
 }

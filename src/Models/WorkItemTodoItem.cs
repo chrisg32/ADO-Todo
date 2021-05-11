@@ -28,12 +28,12 @@ namespace ADOTodo.Models
                 case "Product Backlog Item":
                     //https://docs.microsoft.com/en-us/visualstudio/extensibility/ux-guidelines/images-and-icons-for-visual-studio?view=vs-2019#visual-studio-languages
                     Color = Color.FromRgb(0, 120, 215);
-                    ItemTypePriority = 2;
+                    ItemTypePriority = 4;
                     ItemType = "PBI";
                     break;
                 case "Bug":
                     Color = Color.FromRgb(224, 76, 6);
-                    ItemTypePriority = 2;
+                    ItemTypePriority = 4;
                     ItemType = "Bug";
                     break;
                 case "Fire":

@@ -8,7 +8,7 @@ namespace ADOTodo.Getters
 {
     public class WorkItemGetter : IGetter
     {
-        public int RunOrder => 1;
+        public int RunOrder => 2;
 
         public async Task<List<ITodoItem>> GetAsync(Settings settings, AdoService adoService)
         {

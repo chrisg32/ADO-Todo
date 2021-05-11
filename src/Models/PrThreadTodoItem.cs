@@ -15,15 +15,14 @@ namespace ADOTodo.Models
             ThreadId = thread.Id;
             Id = $"!{pr.PullRequest.PullRequestId}";
             Title = pr.PullRequest.Title;
-            Color = Color.FromRgb(103, 40, 120);
             var commentText = thread.Comments.OrderBy(c => c.PublishedDate).First().Content;
-            commentText = commentText.BlockTruncate();
+            commentText = commentText.RemoveCommentArtifacts()?.Trim().Truncate();
             Description = commentText ?? string.Empty;
             Date = thread.LastUpdatedDate.ToLocalTime();
             Url = $"{baseUri}/{project}/_git/{project}/pullrequest/{pr.PullRequest.PullRequestId}?discussionId={thread.Id}";
         }
         public override string ItemType => "PR";
-        public override Color Color { get; }
+        public override Color Color => Color.FromRgb(103, 40, 120);
         public override int ItemTypePriority => 3;
         
         public int PrId { get; }

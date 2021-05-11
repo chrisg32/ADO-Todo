@@ -22,5 +22,6 @@ namespace ADOTodo.Models
         }
 
         public PrSettings Mine { get; set; } = new PrSettings(ThreadFilterLevel.All);
+        public PrSettings Comprehensive { get; set; } = new PrSettings(ThreadFilterLevel.All);
     }
 }

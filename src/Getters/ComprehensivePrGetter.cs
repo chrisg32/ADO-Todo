@@ -9,21 +9,21 @@ using CG.Commons.Extensions;
 
 namespace ADOTodo.Getters
 {
-    public class MyPrGetter : IGetter
+    public class ComprehensivePrGetter : IGetter
     {
-        public int RunOrder => 3;
-
+        public int RunOrder => 1;
+        
         public async Task<List<ITodoItem>> GetAsync(Settings settings, AdoService adoService)
         {
             var todos = new HashSet<PrThreadTodoItem>(PrThreadTodoItem.EqualityComparer);
 
-            if (settings.Mine.Level != ThreadFilterLevel.None)
+            if (settings.Comprehensive.Level != ThreadFilterLevel.None)
             {
-                var pullRequests = await adoService.GetAllPullRequestsOpenedByMe();
-                switch (settings.Mine.Level)
+                var pullRequests = await adoService.GetComprehensivePullRequests();
+                switch (settings.Comprehensive.Level)
                 {
                     case ThreadFilterLevel.Mentions:
-                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Where(thread => thread.MentionsUser(adoService.UserId)).Select(t => new PrThreadTodoItem(pr, t, adoService.Uri, settings.Project))));
+                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Where(thread => thread.MentionsUser(adoService.UserId)).Select(t => new ComprehensivePrThreadTodoItem(pr, t, adoService.Uri, settings.Project))));
                         break;
                     case ThreadFilterLevel.Comments:
                         throw new NotImplementedException();
@@ -32,7 +32,7 @@ namespace ADOTodo.Getters
                         throw new NotImplementedException();
                         break;
                     case ThreadFilterLevel.All:
-                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Select(t => new PrThreadTodoItem(pr, t, adoService.Uri, settings.Project))));
+                        todos.AddRange(pullRequests.SelectMany(pr => pr.Threads.Select(t => new ComprehensivePrThreadTodoItem(pr, t, adoService.Uri, settings.Project))));
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -43,6 +43,7 @@ namespace ADOTodo.Getters
             var userMap = new Dictionary<Guid, string?>();
             foreach (var id in userIds)
             {
+                //TODO cache this
                 var displayName = await adoService.GetUserName(id);
                 userMap.Add(id, displayName);
             }

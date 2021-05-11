@@ -95,5 +95,18 @@ namespace ADOTodo.Services
             _userClient.Dispose();
             _workItemClient.Dispose();
         }
+
+        public async Task<List<PrSummary>> GetComprehensivePullRequests(bool activeOnly = true)
+        {
+            var pullRequests = await _gitClient.GetPullRequestsByProjectAsync(_projectName, new GitPullRequestSearchCriteria
+            {
+                Status = PullRequestStatus.Active,
+                TargetRefName = "refs/heads/master",
+            });
+
+            pullRequests = pullRequests.Where(pr => pr.SourceRefName.StartsWith("refs/heads/release/")).ToList();
+            
+            return await AddThreads(pullRequests, activeOnly);
+        }
     }
 }
