@@ -11,9 +11,12 @@ namespace ADOTodo.Models
         {
             Id = $"#{workItem.Fields["System.Id"]}";
             Title = workItem.Fields["System.Title"] as string ?? string.Empty;
-            Description = (workItem.Fields["System.Description"] as string).HtmlToPlainText().Truncate();
-            
-            
+            if (workItem.Fields.ContainsKey("System.Description"))
+            {
+                Description = (workItem.Fields["System.Description"] as string).HtmlToPlainText().Truncate();
+            }
+
+
             Url = $"{baseUri}/{project}/_workitems/edit/{workItem.Fields["System.Id"]}";
             
             Date = workItem.Fields["System.ChangedDate"] as DateTime?;
